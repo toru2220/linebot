@@ -34,6 +34,8 @@ userid = os.getenv('CHANNEL_USERID')
 callbackdomain = os.getenv('CALLBACK_DOMAIN')
 starturl = os.getenv('STARTURL')
 
+names = str(os.getenv('NAMES')).split(",")
+
 staticdir = "/static/"
 
 confirmfilename = "confirm.png"
