@@ -1,0 +1,5 @@
+setuptools
+flask
+line-bot-sdk
+pytest-playwright
+pytz
