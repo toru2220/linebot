@@ -91,15 +91,15 @@ def handle_message(event):
             preview_image_url=confirmimageurl
         )
 
-        # 画像メッセージ
-        message_reportedimage = ImageSendMessage(
-            original_content_url=reportedimageurl,
-            preview_image_url=reportedimageurl
-        )
+        # # 画像メッセージ
+        # message_reportedimage = ImageSendMessage(
+        #     original_content_url=reportedimageurl,
+        #     preview_image_url=reportedimageurl
+        # )
 
         # メッセージを送信
         line_bot_api.push_message(userid, messages=message_confirmimage)
-        line_bot_api.push_message(userid, messages=message_reportedimage)
+        # line_bot_api.push_message(userid, messages=message_reportedimage)
          
     else:
           line_bot_api.reply_message(
@@ -185,10 +185,10 @@ def run(playwright,pageurl,name,confirmimage,reportimage):
 
     # 送信
     page.locator("button[data-automation-id=submitButton]").nth(0).click()
-    # 通信がアイドル状態になるまで待機
-    page.wait_for_load_state("networkidle")
+    # # 通信がアイドル状態になるまで待機
+    # page.wait_for_load_state("networkidle")
 
-    page.screenshot(path=reportimage, full_page=True)
+    # page.screenshot(path=reportimage, full_page=True)
 
 if __name__ == "__main__":
 #    app.run()
