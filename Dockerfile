@@ -1,4 +1,4 @@
-FROM python:3.11.3-slim-buster
+FROM python:3.12.0b1-slim-buster
 
 ADD requirements.txt .
 RUN apt-get update && apt-get install -y --no-install-recommends python3-dev gcc build-essential && pip3 install -r requirements.txt && playwright install && playwright install-deps
