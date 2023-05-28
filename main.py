@@ -1,5 +1,4 @@
 import os
-from PIL import Image
 from playwright.sync_api import sync_playwright
 import asyncio
 import urllib.parse
