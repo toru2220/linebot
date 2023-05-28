@@ -2,3 +2,5 @@ setuptools
 flask
 line-bot-sdk
 pytz
+pytest-playwright
+
