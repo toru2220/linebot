@@ -1,0 +1,23 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
+name: start report
+
+on:
+  workflow_dispatch:
+  # schedule:
+  #   - cron: '0 */2 * * *'
+
+concurrency:
+  group: ${{ github.workflow }}
+ 
+permissions:
+  contents: read
+
+jobs:
+  update-ip:
+    runs-on: [self-hosted, free, linux]
+    steps:
+      - name: Update Domain IP
+        run: |
+          curl "https://linebot.donaishitanyarobert.mydns.jp/report"
