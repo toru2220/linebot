@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   update-ip:
-    runs-on: [self-hosted, free, linux]
+    runs-on: ubuntu-latest
     steps:
       - name: Update Domain IP
         run: |
