@@ -127,9 +127,9 @@ def make_quick_reply():
         )
 
     buttons_template_message = TemplateSendMessage(
-        alt_text='Buttons template',
+        alt_text='体温の記録を開始してください',
         template=ButtonsTemplate(
-            thumbnail_image_url='https://1.bp.blogspot.com/-jJHYvrCnLyo/XlhlE7ZYANI/AAAAAAABXiw/HZVOd4hT5g4UJ0NhIsmcjhE-kM6UMEm-QCNcBGAsYHQ/s1600/medical_taionkei_hand_375.png',  # サムネイル画像URL
+            thumbnail_image_url='%s/static/hand.png' % callbackdomain,  # サムネイル画像URL
             title='記録対象の選択',  # タイトル
             text='名前を選択すると、ランダムで体温を決定し報告を開始します',  # テキスト
             actions=actions
@@ -163,12 +163,6 @@ def run(playwright,pageurl,name,confirmimage,reportimage):
     # リストからランダムに選択
     random_choice = random.choice(nums)
 
-    # 日付
-    t_delta = datetime.timedelta(hours=9)
-    JST = datetime.timezone(t_delta, 'JST')
-    now = datetime.datetime.now(JST)
-    datestring = now.strftime('%Y/%m/%d %H:%M')
-
     chromium = playwright.chromium # or "firefox" or "webkit".
     browser = chromium.launch()
     page = browser.new_page()
@@ -178,7 +172,6 @@ def run(playwright,pageurl,name,confirmimage,reportimage):
     page.locator("input[aria-label='Single line text']").nth(0).fill(name)
     page.locator("input[aria-label='Single line text']").nth(1).fill(str(random_choice))
     page.locator("input[type=radio]").nth(0).check()
-    page.locator("input[aria-label='Single line text']").nth(2).fill(datestring)
 
     # 入力内容
     page.screenshot(path=confirmimage, full_page=True)
