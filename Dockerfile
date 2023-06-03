@@ -12,6 +12,10 @@ ENV STARTURL ""
 ENV CALLBACK_DOMAIN ""
 
 WORKDIR /app/static/
+
+WORKDIR /app/apps/
+ADD ./apps/*.py .
+
 WORKDIR /app
 ADD main.py .
 ENTRYPOINT ["/usr/local/bin/python3", "main.py"]
