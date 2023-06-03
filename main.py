@@ -1,6 +1,10 @@
 import os
 import importlib
 from flask import Flask
+import concurrent.futures
+
+def run_app(app, port):
+    app.run(host="0.0.0.0", port=port)
 
 if __name__ == '__main__':
     app_directory = 'apps'  # アプリファイルが格納されているサブディレクトリ
@@ -11,9 +15,17 @@ if __name__ == '__main__':
         if file.endswith('.py'):
             app_files.append(file[:-3])
 
-    for app_file in app_files:
-        module_name = f"{app_directory}.{app_file}"
-        module = importlib.import_module(module_name)
-        app = getattr(module, 'app')
-        port = getattr(module, 'port')
-        app.run(port=port)
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        # 各アプリをスレッドで並列実行
+        futures = []
+        for app_file in app_files:
+            module_name = f"{app_directory}.{app_file}"
+            future = executor.submit(importlib.import_module, module_name)
+            futures.append(future)
+
+        # 完了したスレッドから結果を取得してアプリを起動
+        for future in concurrent.futures.as_completed(futures):
+            module = future.result()
+            app = getattr(module, 'app')
+            port = getattr(module, 'port')
+            executor.submit(run_app, app, port)

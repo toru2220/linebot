@@ -29,6 +29,10 @@ from linebot.models import TemplateSendMessage, ButtonsTemplate, MessageAction, 
 app = Flask(__name__)
 port = 8889
 
+# line_bot_api = LineBotApi(os.getenv('HR_CHANNEL_ACCESS_TOKEN'))
+# handler = WebhookHandler(os.getenv('HR_CHANNEL_SECRET'))
+# callbackdomain = os.getenv('HR_CALLBACK_DOMAIN')
+
 line_bot_api = LineBotApi(os.getenv('YT_CHANNEL_ACCESS_TOKEN'))
 handler = WebhookHandler(os.getenv('YT_CHANNEL_SECRET'))
 callbackdomain = os.getenv('YT_CALLBACK_DOMAIN')
