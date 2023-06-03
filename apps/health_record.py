@@ -27,6 +27,7 @@ from linebot.models.actions import PostbackAction
 from linebot.models import TemplateSendMessage, ButtonsTemplate, MessageAction, ImageSendMessage
 
 app = Flask(__name__)
+port = 8888
 
 line_bot_api = LineBotApi(os.getenv('CHANNEL_ACCESS_TOKEN'))
 handler = WebhookHandler(os.getenv('CHANNEL_SECRET'))
@@ -183,7 +184,6 @@ def run(playwright,pageurl,name,confirmimage,reportimage):
 
     # page.screenshot(path=reportimage, full_page=True)
 
-if __name__ == "__main__":
-#    app.run()
-    port = int(os.getenv("PORT", 8888))
+if __name__ == '__main__':
     app.run(host="0.0.0.0", port=port)
+
