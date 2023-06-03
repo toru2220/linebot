@@ -12,6 +12,7 @@ ENV STARTURL ""
 ENV CALLBACK_DOMAIN ""
 
 WORKDIR /app/static/
+WORKDIR /app/storage/
 
 WORKDIR /app/apps/
 ADD ./apps/*.py .

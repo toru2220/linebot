@@ -29,13 +29,13 @@ from linebot.models import TemplateSendMessage, ButtonsTemplate, MessageAction, 
 app = Flask(__name__)
 port = 8888
 
-line_bot_api = LineBotApi(os.getenv('CHANNEL_ACCESS_TOKEN'))
-handler = WebhookHandler(os.getenv('CHANNEL_SECRET'))
-userid = os.getenv('CHANNEL_USERID')
-callbackdomain = os.getenv('CALLBACK_DOMAIN')
-starturl = os.getenv('STARTURL')
+line_bot_api = LineBotApi(os.getenv('HR_CHANNEL_ACCESS_TOKEN'))
+handler = WebhookHandler(os.getenv('HR_CHANNEL_SECRET'))
+userid = os.getenv('HR_CHANNEL_USERID')
+callbackdomain = os.getenv('HR_CALLBACK_DOMAIN')
+starturl = os.getenv('HR_STARTURL')
 
-names = str(os.getenv('NAMES')).split(",")
+names = str(os.getenv('HR_NAMES')).split(",")
 
 staticdir = "/static/"
 
