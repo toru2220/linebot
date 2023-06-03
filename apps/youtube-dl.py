@@ -68,7 +68,7 @@ def handle_message(event):
 
     line_bot_api.reply_message(
         event.reply_token,
-        TextSendMessage(text="youtube" % event.message.text))
+        TextSendMessage(text="youtube url = %s" % event.message.text))
     
 @app.route('/storage/<path:path>')
 def send_static(path):
