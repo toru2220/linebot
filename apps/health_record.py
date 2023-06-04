@@ -130,7 +130,7 @@ def make_quick_reply():
     buttons_template_message = TemplateSendMessage(
         alt_text='体温の記録を開始してください',
         template=ButtonsTemplate(
-            thumbnail_image_url='%s/static/hand.png' % callbackdomain,  # サムネイル画像URL
+            thumbnail_image_url='%shand.png' % urlprefix,  # サムネイル画像URL
             title='記録対象の選択',  # タイトル
             text='名前を選択すると、ランダムで体温を決定し報告を開始します',  # テキスト
             actions=actions
