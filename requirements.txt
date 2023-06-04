@@ -4,3 +4,4 @@ line-bot-sdk
 pytz
 pytest-playwright
 yt-dlp
+python-dotenv

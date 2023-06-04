@@ -29,15 +29,15 @@ from linebot.models import TemplateSendMessage, ButtonsTemplate, MessageAction, 
 app = Flask(__name__)
 port = 8888
 
-line_bot_api = LineBotApi(os.getenv('HR_CHANNEL_ACCESS_TOKEN'))
-handler = WebhookHandler(os.getenv('HR_CHANNEL_SECRET'))
-userid = os.getenv('HR_CHANNEL_USERID')
-callbackdomain = os.getenv('HR_CALLBACK_DOMAIN')
-starturl = os.getenv('HR_STARTURL')
+line_bot_api = LineBotApi(os.getenv('HR_CHANNEL_ACCESS_TOKEN',''))
+handler = WebhookHandler(os.getenv('HR_CHANNEL_SECRET',''))
+userid = os.getenv('HR_CHANNEL_USERID','')
+callbackdomain = os.getenv('HR_CALLBACK_DOMAIN','')
+starturl = os.getenv('HR_STARTURL',"")
 
 names = str(os.getenv('HR_NAMES')).split(",")
 
-staticdir = "/static/"
+staticdir = "/apps/static/"
 
 confirmfilename = "confirm.png"
 confirmthumbfilename = "confirm_thumb.png"
@@ -140,10 +140,6 @@ def make_quick_reply():
     line_bot_api.push_message(userid, messages=buttons_template_message)
 
     return 'OK'
-
-@app.route('/static/<path:path>')
-def send_static(path):
-    return send_from_directory('static', path)
 
 def resize_image(input_image_path, output_image_path, size):
     original_image = Image.open(input_image_path)

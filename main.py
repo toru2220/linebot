@@ -2,11 +2,19 @@ import os
 import importlib
 from flask import Flask
 import concurrent.futures
+from dotenv import load_dotenv
 
 def run_app(app, port):
     app.run(host="0.0.0.0", port=port)
 
 if __name__ == '__main__':
+
+    # .envファイルのパスを指定
+    dotenv_path = '.env'
+
+    # .envファイルを環境変数として読み込む
+    load_dotenv(dotenv_path)
+
     app_directory = 'apps'  # アプリファイルが格納されているサブディレクトリ
     app_files = []
 
