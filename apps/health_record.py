@@ -112,7 +112,7 @@ def handle_message(event):
 def make_quick_reply():
 
     # namesが設定されていないときは警告メッセージ表示のみ行う
-    if os.getenv('NAMES') is None or len(str(os.getenv('NAMES'))) < 1:
+    if os.getenv('NAMES') is None or len(str(os.getenv('HR_NAMES'))) < 1:
         message = TextSendMessage(text='環境変数NAMESが設定されていません。終了します。')
         line_bot_api.push_message(userid, messages=message)
         return "OK"
