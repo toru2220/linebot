@@ -27,7 +27,7 @@ from linebot.models.actions import PostbackAction
 from linebot.models import TemplateSendMessage, ButtonsTemplate, MessageAction, ImageSendMessage
 
 app = Flask(__name__)
-port = 8888
+port = 8890
 
 line_bot_api = LineBotApi(os.getenv('HR_CHANNEL_ACCESS_TOKEN',''))
 handler = WebhookHandler(os.getenv('HR_CHANNEL_SECRET',''))
@@ -37,7 +37,7 @@ starturl = os.getenv('HR_STARTURL',"")
 
 names = str(os.getenv('HR_NAMES')).split(",")
 
-staticdir = "/apps/static/"
+staticdir = "/static/"
 
 confirmfilename = "confirm.png"
 confirmthumbfilename = "confirm_thumb.png"
