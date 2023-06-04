@@ -20,4 +20,4 @@ jobs:
     steps:
       - name: notification
         run: |
-          curl "https://linebot.donaishitanyarobert.mydns.jp/report"
+          curl "https://linebot.school.donaishitanyarobert.mydns.jp/report"
