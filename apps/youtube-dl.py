@@ -137,9 +137,13 @@ def handle_message(event):
         with YoutubeDL(request_vars) as ydl:
             metadata = ydl.extract_info(targeturl)
 
-        if os.path.exists(tmpfile):
+        print("#### downloaded metadata #####")
+        print(metadata)
+        print("###########")
 
-            shutil.move(tmpfile, outputfilename)
+        if os.path.exists(metadata["fragments"][0]["filepath"]):
+
+            shutil.move(metadata["fragments"][0]["filepath"], outputfilename)
 
             downloadedurl = urllib.parse.urljoin(movieprefix,quote(os.path.basename(outputfilename)))
 
@@ -242,6 +246,7 @@ def handle_message(event):
 
 
         else:
+            print("file not found:%s" % tmpfile)
             pass
 
     except Exception as e:
