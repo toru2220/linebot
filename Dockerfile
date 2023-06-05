@@ -11,12 +11,14 @@ ENV CHANNEL_USERID ""
 ENV STARTURL ""
 ENV CALLBACK_DOMAIN ""
 
-WORKDIR /app/static/
-WORKDIR /app/movie/
-WORKDIR /app/audio/
+WORKDIR /app/apps/static/
+ADD ./apps/static/* .
+
+WORKDIR /app/apps/movie/
+WORKDIR /app/apps/audio/
 
 WORKDIR /app/apps/
-ADD ./apps/*.py .
+ADD ./app/*.py .
 
 WORKDIR /app
 ADD main.py .
