@@ -1,6 +1,7 @@
 import os
 import asyncio
 import urllib.parse
+from urllib.parse import quote
 
 # datetimeモジュールを使用
 import datetime
@@ -30,7 +31,9 @@ from linebot.models import TemplateSendMessage, ButtonsTemplate, MessageAction, 
 from yt_dlp import YoutubeDL,DownloadError
 from urllib.parse import urljoin,unquote,urlparse
 
-storagedir = "/static/"
+staticdir = "/static/"
+moviedir = "/movie/"
+audiodir = "/audio/"
 
 app = Flask(__name__)
 
@@ -47,7 +50,9 @@ handler = WebhookHandler(os.getenv('YT_CHANNEL_SECRET',''))
 userid = os.getenv('YT_CHANNEL_USERID','')
 callbackdomain = os.getenv('YT_CALLBACK_DOMAIN','')
 
-storageprefix = urllib.parse.urljoin(callbackdomain,storagedir)
+staticprefix = urllib.parse.urljoin(callbackdomain,staticdir)
+movieprefix = urllib.parse.urljoin(callbackdomain,moviedir)
+audioprefix = urllib.parse.urljoin(callbackdomain,audiodir)
 
 def is_url(url):
   try:
@@ -59,8 +64,6 @@ def is_url(url):
 @app.route("/callback", methods=['POST'])
 def callback():
 
-    print(line_bot_api)
-    print(handler)
     # get X-Line-Signature header value
     # print(request.headers)
     signature = request.headers['X-Line-Signature']
@@ -81,8 +84,12 @@ def callback():
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
 
+    print("####################")
+    print(event.message)
+    print("####################")
+
     targeturl = event.message.text
-    tmpfile = ".%s%s" % (storagedir,str(uuid.uuid4()))
+    tmpfile = "./apps/%s/%s" % (moviedir,str(uuid.uuid4()))
 
     # URLとして解釈できない場合は処理しない
     if is_url(targeturl) == False:
@@ -104,7 +111,8 @@ def handle_message(event):
         "fixup" : "never",
         # "socket_timeout" : 15000,
         "http_headers" : headers,
-        "nocheckcertificate" : True
+        "nocheckcertificate" : True,
+        "format" : "bestvideo+bestaudio/best"
     }
 
     # simulate = Trueでmetadata取得
@@ -118,7 +126,7 @@ def handle_message(event):
         #     print("Key:", key)
         #     print("Value:", value)
 
-        outputfilename = os.path.join(".%s" % storagedir,".".join([metadata["fulltitle"],metadata["ext"]]))
+        outputfilename = "./apps/%s/%s.%s" % (moviedir,metadata["fulltitle"],metadata["ext"])
 
     line_bot_api.reply_message(
         event.reply_token,
@@ -133,47 +141,85 @@ def handle_message(event):
 
             shutil.move(tmpfile, outputfilename)
 
-            downloadedurl = urllib.parse.urljoin(storageprefix,os.path.basename(outputfilename))
+            downloadedurl = urllib.parse.urljoin(movieprefix,quote(os.path.basename(outputfilename)))
 
             print("downloaded path:%s" % downloadedurl)
 
-            # Flexメッセージのコンテンツを定義
-            # 注意点として、トリプルクォート内で波括弧 {} を表現するためには、二重の波括弧 {{}} を使用する必要があります。
-            flex_message = f"""{{
-                "type": "bubble",
-                "hero": {{
-                    "type": "image",
-                    "url": "{metadata['thumbnail']}",
-                    "size": "full",
-                    "aspectRatio": "20:13",
-                    "aspectMode": "cover",
-                    "action": {{
-                    "type": "uri",
-                    "uri": "{downloadedurl}"
+            payload = f"""{{
+                "type": "flex",
+                "altText": "download complete",
+                "contents": {{
+                    "type": "bubble",
+                    "hero": {{
+                        "type": "image",
+                        "url": "{metadata['thumbnail']}",
+                        "size": "full",
+                        "aspectRatio": "20:13",
+                        "aspectMode": "cover",
+                        "action": {{
+                        "type": "uri",
+                        "uri": "{downloadedurl}"
+                        }}    
+                    }},
+                    "body": {{
+                        "type": "box",
+                        "layout": "vertical",
+                        "contents": [
+                        {{
+                            "type": "text",
+                            "text": "{metadata['fulltitle']}",
+                            "weight": "bold",
+                            "size": "lg"
+                        }}
+                        ]
                     }}
-                }},
-                "body": {{
-                    "type": "box",
-                    "layout": "vertical",
-                    "contents": [
-                    {{
-                        "type": "text",
-                        "text": "{metadata['fulltitle']}",
-                        "weight": "bold",
-                        "size": "lg"
-                    }}
-                    ]
                 }}
-            }}
-            """
+            }}"""
 
-            # json_string = json.dumps(flex_message)
+            jsonDict = json.loads(payload)
 
-            # FlexSendMessageオブジェクトを作成
-            flex_send_message = FlexSendMessage(alt_text='download complete', contents=flex_message)
+            container_obj = FlexSendMessage.new_from_json_dict(jsonDict)
 
-            # メッセージを送信
-            line_bot_api.push_message(to=userid, messages=flex_send_message)
+            #最後に、push_messageメソッドを使ってPUSH送信する
+            line_bot_api.push_message(to=userid, messages=container_obj)
+
+            # # Flexメッセージのコンテンツを定義
+            # # 注意点として、トリプルクォート内で波括弧 {} を表現するためには、二重の波括弧 {{}} を使用する必要があります。
+            # flex_message = f"""{{
+            #     "type": "bubble",
+            #     "hero": {{
+            #         "type": "image",
+            #         "url": "{metadata['thumbnail']}",
+            #         "size": "full",
+            #         "aspectRatio": "20:13",
+            #         "aspectMode": "cover",
+            #         "action": {{
+            #         "type": "uri",
+            #         "uri": "{downloadedurl}"
+            #         }}
+            #     }},
+            #     "body": {{
+            #         "type": "box",
+            #         "layout": "vertical",
+            #         "contents": [
+            #         {{
+            #             "type": "text",
+            #             "text": "{metadata['fulltitle']}",
+            #             "weight": "bold",
+            #             "size": "lg"
+            #         }}
+            #         ]
+            #     }}
+            # }}
+            # """
+
+            # # json_string = json.dumps(flex_message)
+
+            # # FlexSendMessageオブジェクトを作成
+            # flex_send_message = FlexSendMessage(alt_text='download complete', contents=flex_message)
+
+            # # メッセージを送信
+            # line_bot_api.push_message(to=userid, messages=flex_send_message)
 
 
 
@@ -206,6 +252,63 @@ def handle_message(event):
 
         # メッセージの送信
         line_bot_api.push_message(userid, message)
+
+
+
+@app.route("/report", methods=['GET'])
+def make_quick_reply():
+
+    metadata = {
+        "url" : "https://www.google.com",
+        "title" : "TAS",
+    }
+
+    payload = f"""{{
+        "type": "flex",
+        "altText": "download complete",
+        "contents": {{
+            "type": "bubble",
+            "hero": {{
+                "type": "image",
+                "url": "{metadata['url']}",
+                "size": "full",
+                "aspectRatio": "20:13",
+                "aspectMode": "cover",
+                "action": {{
+                "type": "uri",
+                "uri": "{metadata['url']}"
+                }}    
+            }},
+            "body": {{
+                "type": "box",
+                "layout": "vertical",
+                "contents": [
+                {{
+                    "type": "text",
+                    "text": "{metadata['title']}",
+                    "weight": "bold",
+                    "size": "lg"
+                }}
+                ]
+            }}
+        }}
+    }}"""
+
+    jsonDict = json.loads(payload)
+
+    container_obj = FlexSendMessage.new_from_json_dict(jsonDict)
+
+    #最後に、push_messageメソッドを使ってPUSH送信する
+    line_bot_api.push_message(to=userid, messages=container_obj)
+
+    #     # FlexSendMessageオブジェクトを作成
+    # flex_send_message = FlexSendMessage(alt_text='download complete', contents=json_string)
+    # # flex_send_message = FlexSendMessage(alt_text='download complete', contents=flex_message)
+
+    # # メッセージを送信
+    # line_bot_api.push_message(to=userid, messages=flex_send_message)
+
+    return 'OK'
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=port)
