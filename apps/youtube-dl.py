@@ -9,7 +9,7 @@ import uuid
 import shutil
 import json
 
-from flask import Flask, request, abort, send_from_directory
+from flask import Flask, Blueprint, request, abort, send_from_directory
 
 from linebot import (
     LineBotApi, WebhookHandler
@@ -30,9 +30,16 @@ from linebot.models import TemplateSendMessage, ButtonsTemplate, MessageAction, 
 from yt_dlp import YoutubeDL,DownloadError
 from urllib.parse import urljoin,unquote,urlparse
 
-storagedir = "/apps/static/"
+storagedir = "/static/"
 
 app = Flask(__name__)
+
+movieBp = Blueprint("movie", __name__, static_folder="movie", static_url_path="/movie")
+audioBp = Blueprint("audio", __name__, static_folder="audio", static_url_path="/audio")
+
+app.register_blueprint(movieBp)
+app.register_blueprint(audioBp)
+
 port = 8891
 
 line_bot_api = LineBotApi(os.getenv('YT_CHANNEL_ACCESS_TOKEN',''))
