@@ -18,7 +18,7 @@ WORKDIR /app/apps/movie/
 WORKDIR /app/apps/audio/
 
 WORKDIR /app/apps/
-ADD ./app/*.py .
+ADD ./apps/*.py .
 
 WORKDIR /app
 ADD main.py .
