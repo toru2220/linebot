@@ -38,7 +38,7 @@ starturl = os.getenv('HR_STARTURL',"")
 
 names = str(os.getenv('HR_NAMES')).split(",")
 
-staticdir = "static"
+staticdir = "/static/"
 
 confirmfilename = "confirm.png"
 confirmthumbfilename = "confirm_thumb.png"
