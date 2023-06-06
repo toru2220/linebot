@@ -5,12 +5,6 @@ ADD requirements.txt .
 RUN apt-get update && apt-get install -y --no-install-recommends python3-dev gcc build-essential ffmpeg && pip3 install -r requirements.txt 
 RUN playwright install-deps && playwright install
 
-ENV CHANNEL_ACCESS_TOKEN ""
-ENV CHANNEL_SECRET ""
-ENV CHANNEL_USERID ""
-ENV STARTURL ""
-ENV CALLBACK_DOMAIN ""
-
 WORKDIR /app/apps/static/
 ADD ./apps/static/* .
 
