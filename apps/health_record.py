@@ -82,10 +82,11 @@ def handle_message(event):
         
         with sync_playwright() as playwright:
 
-            confirmimagepath = confirmimageurl.replace(callbackdomain,'.')
-            reportedimagepath = reportedimageurl.replace(callbackdomain,'.')
+            confirmimagepath = "./apps/static/%s" % confirmfilename
 
-            run(playwright,starturl,event.message.text,confirmimagepath,reportedimagepath)
+            print("save local path:%s" % confirmimagepath)
+
+            run(playwright,starturl,event.message.text,confirmimagepath)
 
         # 画像メッセージ
         message_confirmimage = ImageSendMessage(
@@ -153,7 +154,7 @@ def resize_image(input_image_path, output_image_path, size):
 
     resized_image.save(output_image_path)
 
-def run(playwright,pageurl,name,confirmimage,reportimage):
+def run(playwright,pageurl,name,confirmimage):
   
     # 36.4から36.7まで0.1刻みのリストを作成
     nums = [round(i * 0.1, 1) for i in range(364, 368)]

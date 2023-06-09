@@ -9,6 +9,7 @@ import random
 import uuid
 import shutil
 import json
+from pprint import pprint
 
 from flask import Flask, Blueprint, request, abort, send_from_directory
 
@@ -29,7 +30,7 @@ from linebot.models import (
 from linebot.models.actions import PostbackAction
 from linebot.models import TemplateSendMessage, ButtonsTemplate, MessageAction, ImageSendMessage, FlexSendMessage
 from yt_dlp import YoutubeDL,DownloadError
-from urllib.parse import urljoin,unquote,urlparse
+from urllib.parse import urljoin,unquote,urlparse,parse_qs
 
 staticdir = "/static/"
 moviedir = "/movie/"
@@ -119,6 +120,7 @@ def handle_message(event):
     request_vars["simulate"] = True
 
     outputfilename = ""
+    metadata = {}
     with YoutubeDL(request_vars) as ydl:
         metadata = ydl.extract_info(targeturl)
 
@@ -130,20 +132,23 @@ def handle_message(event):
 
     line_bot_api.reply_message(
         event.reply_token,
-        TextSendMessage(text="ダウンロードを開始します。 url = %s" % targeturl ))
+        TextSendMessage(text=f"{metadata['fulltitle']}のダウンロードを開始します。"))
     
     try:
         request_vars["simulate"] = False       
         with YoutubeDL(request_vars) as ydl:
             metadata = ydl.extract_info(targeturl)
 
-        print("#### downloaded metadata #####")
-        print(metadata)
-        print("###########")
+        # print("#### downloaded metadata #####")
+        # pprint(metadata)
+        # print(metadata["requested_downloads"][0]["filepath"])
+        # print("###########")
 
-        if os.path.exists(metadata["fragments"][0]["filepath"]):
+        downloadedtmpfile = metadata["requested_downloads"][0]["filepath"]
 
-            shutil.move(metadata["fragments"][0]["filepath"], outputfilename)
+        if os.path.exists(downloadedtmpfile):
+
+            shutil.move(downloadedtmpfile, outputfilename)
 
             downloadedurl = urllib.parse.urljoin(movieprefix,quote(os.path.basename(outputfilename)))
 
@@ -154,6 +159,7 @@ def handle_message(event):
                 "altText": "download complete",
                 "contents": {{
                     "type": "bubble",
+                    "size": "giga",
                     "hero": {{
                         "type": "image",
                         "url": "{metadata['thumbnail']}",
@@ -163,7 +169,7 @@ def handle_message(event):
                         "action": {{
                         "type": "uri",
                         "uri": "{downloadedurl}"
-                        }}    
+                        }}
                     }},
                     "body": {{
                         "type": "box",
@@ -172,78 +178,70 @@ def handle_message(event):
                         {{
                             "type": "text",
                             "text": "{metadata['fulltitle']}",
-                            "weight": "bold",
-                            "size": "lg"
+                            "weight": "regular",
+                            "size": "xxs",
+                            "align": "start"
                         }}
                         ]
-                    }}
-                }}
+                    }},
+                    "footer": {{
+                        "type": "box",
+                        "layout": "vertical",
+                        "spacing": "sm",
+                        "contents": [
+                        {{
+                            "type": "image",
+                            "url": "{staticprefix}/convert.png",
+                            "action": {{
+                            "type": "postback",
+                            "label": "Audio変換",
+                            "data": "type=convert2audio&name={quote(os.path.basename(outputfilename))}"
+                            }},
+                            "size": "xxs"
+                        }}
+                        ],
+                        "flex": 0
+                    }}     
+                }}              
             }}"""
 
+                #      "type": "flex",
+                # "altText": "download complete",
+                # "contents": {{
+                #     "type": "bubble",
+                #     "hero": {{
+                #         "type": "image",
+                #         "url": "{metadata['thumbnail']}",
+                #         "size": "full",
+                #         "aspectRatio": "20:13",
+                #         "aspectMode": "cover",
+                #         "action": {{
+                #         "type": "uri",
+                #         "uri": "{downloadedurl}"
+                #         }}    
+                #     }},
+                #     "body": {{
+                #         "type": "box",
+                #         "layout": "vertical",
+                #         "contents": [
+                #         {{
+                #             "type": "text",
+                #             "text": "{metadata['fulltitle']}",
+                #             "weight": "bold",
+                #             "size": "lg"
+                #         }}
+                #         ]
+                #     }}
+                # }}
+     
+     
+     
             jsonDict = json.loads(payload)
 
             container_obj = FlexSendMessage.new_from_json_dict(jsonDict)
 
             #最後に、push_messageメソッドを使ってPUSH送信する
             line_bot_api.push_message(to=userid, messages=container_obj)
-
-            # # Flexメッセージのコンテンツを定義
-            # # 注意点として、トリプルクォート内で波括弧 {} を表現するためには、二重の波括弧 {{}} を使用する必要があります。
-            # flex_message = f"""{{
-            #     "type": "bubble",
-            #     "hero": {{
-            #         "type": "image",
-            #         "url": "{metadata['thumbnail']}",
-            #         "size": "full",
-            #         "aspectRatio": "20:13",
-            #         "aspectMode": "cover",
-            #         "action": {{
-            #         "type": "uri",
-            #         "uri": "{downloadedurl}"
-            #         }}
-            #     }},
-            #     "body": {{
-            #         "type": "box",
-            #         "layout": "vertical",
-            #         "contents": [
-            #         {{
-            #             "type": "text",
-            #             "text": "{metadata['fulltitle']}",
-            #             "weight": "bold",
-            #             "size": "lg"
-            #         }}
-            #         ]
-            #     }}
-            # }}
-            # """
-
-            # # json_string = json.dumps(flex_message)
-
-            # # FlexSendMessageオブジェクトを作成
-            # flex_send_message = FlexSendMessage(alt_text='download complete', contents=flex_message)
-
-            # # メッセージを送信
-            # line_bot_api.push_message(to=userid, messages=flex_send_message)
-
-
-
-            # # 画像メッセージ
-            # message_confirmimage = ImageSendMessage(
-            #     original_content_url=metadata["thumbnail"],
-            #     preview_image_url=metadata["thumbnail"]
-            # )
-
-            # # メッセージを送信
-            # line_bot_api.push_message(userid, messages=message_confirmimage)
-            # # line_bot_api.push_message(userid, messages=message_reportedimage)
-        
-
-            # # メッセージの作成
-            # message = TextSendMessage(text="ダウンロードが完了しました。")
-
-            # # メッセージの送信
-            # line_bot_api.push_message(userid, message)
-
 
         else:
             print("file not found:%s" % tmpfile)
@@ -258,7 +256,62 @@ def handle_message(event):
         # メッセージの送信
         line_bot_api.push_message(userid, message)
 
+@handler.add(PostbackEvent)
+def handle_postback_event(event):
+    # postbackイベントの処理
+    postback_data = event.postback.data
+    reply_message = "Received postback data: " + postback_data
 
+    # クエリ文字列を解析してキーと値のペアを取得
+    parameters = parse_qs(postback_data)
+
+    # typeがkeyにない場合は処理しない
+
+    if not "type" in parameters:
+        # メッセージの作成
+        message = TextSendMessage(text="変換方法が指定されていません。中断します。")
+        # メッセージの送信
+        line_bot_api.push_message(userid, message)
+
+        return "OK"
+    
+    if not "name" in parameters:
+        # メッセージの作成
+        message = TextSendMessage(text="ファイル名が指定されていません。中断します。")
+        # メッセージの送信
+        line_bot_api.push_message(userid, message)
+
+        return "OK"
+    
+    decodedFile = unquote(parameters["name"])
+    decodedFullPath = f"./apps/audio/{decodedFile}"
+
+    # ファイルが見つからない場合は処理しない
+    if not os.path.exists(decodedFullPath):
+        # メッセージの作成
+        message = TextSendMessage(text=f"{decodedFullPath}が見つかりません。中断します。")
+        # メッセージの送信
+        line_bot_api.push_message(userid, message)
+
+        return "OK"
+    
+    if parameters["type"] == "convert2audio":
+        # メッセージの作成
+        message = TextSendMessage(text=f"変換を開始します。")
+        # メッセージの送信
+        line_bot_api.push_message(userid, message)
+
+        
+    # # キーとデコードされた値を表示
+    # for key, values in parameters.items():
+    #     for value in values:
+    #         decoded_value = unquote(value)
+    #         print(f"Key: {key}, Value: {decoded_value}")
+    #         line_bot_api.reply_message(event.reply_token, TextMessage(text=reply_message))
+
+    # line_bot_api.reply_message(event.reply_token, TextMessage(text=reply_message))
+
+    return "OK"
 
 @app.route("/report", methods=['GET'])
 def make_quick_reply():
