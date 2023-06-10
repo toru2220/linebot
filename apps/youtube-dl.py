@@ -10,6 +10,7 @@ import uuid
 import shutil
 import json
 from pprint import pprint
+from pydub import AudioSegment
 
 from flask import Flask, Blueprint, request, abort, send_from_directory
 
@@ -54,6 +55,10 @@ callbackdomain = os.getenv('YT_CALLBACK_DOMAIN','')
 staticprefix = urllib.parse.urljoin(callbackdomain,staticdir)
 movieprefix = urllib.parse.urljoin(callbackdomain,moviedir)
 audioprefix = urllib.parse.urljoin(callbackdomain,audiodir)
+
+def convert_to_mp3(input_path, output_path, bitrate='192k'):
+    audio = AudioSegment.from_file(input_path)
+    audio.export(output_path, format='mp3', bitrate=bitrate)
 
 def is_url(url):
   try:
@@ -204,38 +209,6 @@ def handle_message(event):
                     }}     
                 }}              
             }}"""
-
-                #      "type": "flex",
-                # "altText": "download complete",
-                # "contents": {{
-                #     "type": "bubble",
-                #     "hero": {{
-                #         "type": "image",
-                #         "url": "{metadata['thumbnail']}",
-                #         "size": "full",
-                #         "aspectRatio": "20:13",
-                #         "aspectMode": "cover",
-                #         "action": {{
-                #         "type": "uri",
-                #         "uri": "{downloadedurl}"
-                #         }}    
-                #     }},
-                #     "body": {{
-                #         "type": "box",
-                #         "layout": "vertical",
-                #         "contents": [
-                #         {{
-                #             "type": "text",
-                #             "text": "{metadata['fulltitle']}",
-                #             "weight": "bold",
-                #             "size": "lg"
-                #         }}
-                #         ]
-                #     }}
-                # }}
-     
-     
-     
             jsonDict = json.loads(payload)
 
             container_obj = FlexSendMessage.new_from_json_dict(jsonDict)
@@ -283,90 +256,59 @@ def handle_postback_event(event):
 
         return "OK"
     
-    decodedFile = unquote(parameters["name"])
-    decodedFullPath = f"./apps/audio/{decodedFile}"
+
+    decodedFile = unquote(parameters["name"][0])
+    
+    targetFullPath = f"./apps/movie/{decodedFile}"
+    nameonly, ext = os.path.splitext(decodedFile)
+    decodedFulPathMp3 = f"./apps/audio/{nameonly}.mp3"
 
     # ファイルが見つからない場合は処理しない
-    if not os.path.exists(decodedFullPath):
+    if not os.path.exists(targetFullPath):
         # メッセージの作成
-        message = TextSendMessage(text=f"{decodedFullPath}が見つかりません。中断します。")
+        message = TextSendMessage(text=f"{targetFullPath}が見つかりません。中断します。")
         # メッセージの送信
         line_bot_api.push_message(userid, message)
 
         return "OK"
-    
-    if parameters["type"] == "convert2audio":
+
+    if parameters["type"][0] == "convert2audio":
         # メッセージの作成
-        message = TextSendMessage(text=f"変換を開始します。")
+        message = TextSendMessage(text="変換を開始します。")
         # メッセージの送信
         line_bot_api.push_message(userid, message)
 
-        
-    # # キーとデコードされた値を表示
-    # for key, values in parameters.items():
-    #     for value in values:
-    #         decoded_value = unquote(value)
-    #         print(f"Key: {key}, Value: {decoded_value}")
-    #         line_bot_api.reply_message(event.reply_token, TextMessage(text=reply_message))
+        convert_to_mp3(targetFullPath, decodedFulPathMp3, bitrate='192k')
+        downloadedurl = urllib.parse.urljoin(audioprefix,quote(os.path.basename(decodedFulPathMp3)))
 
-    # line_bot_api.reply_message(event.reply_token, TextMessage(text=reply_message))
+        print(downloadedurl)
+
+        payload = f"""{{
+            "type": "flex",
+            "altText": "download complete",
+            "contents": {{
+                "type": "bubble",
+                "hero": {{
+                    "type": "image",
+                    "url": "https://img.freepik.com/premium-vector/modern-flat-design-of-mp3-file-icon-for-web-simple-style_599062-487.jpg",
+                    "size": "xxs",
+                    "aspectRatio": "5:5",
+                    "aspectMode": "cover",
+                    "action": {{
+                        "type": "uri",
+                        "uri": "{downloadedurl}"
+                    }}
+                }}
+            }}              
+        }}"""
+        jsonDict = json.loads(payload)
+
+        container_obj = FlexSendMessage.new_from_json_dict(jsonDict)
+
+        #最後に、push_messageメソッドを使ってPUSH送信する
+        line_bot_api.push_message(to=userid, messages=container_obj)
 
     return "OK"
-
-@app.route("/report", methods=['GET'])
-def make_quick_reply():
-
-    metadata = {
-        "url" : "https://www.google.com",
-        "title" : "TAS",
-    }
-
-    payload = f"""{{
-        "type": "flex",
-        "altText": "download complete",
-        "contents": {{
-            "type": "bubble",
-            "hero": {{
-                "type": "image",
-                "url": "{metadata['url']}",
-                "size": "full",
-                "aspectRatio": "20:13",
-                "aspectMode": "cover",
-                "action": {{
-                "type": "uri",
-                "uri": "{metadata['url']}"
-                }}    
-            }},
-            "body": {{
-                "type": "box",
-                "layout": "vertical",
-                "contents": [
-                {{
-                    "type": "text",
-                    "text": "{metadata['title']}",
-                    "weight": "bold",
-                    "size": "lg"
-                }}
-                ]
-            }}
-        }}
-    }}"""
-
-    jsonDict = json.loads(payload)
-
-    container_obj = FlexSendMessage.new_from_json_dict(jsonDict)
-
-    #最後に、push_messageメソッドを使ってPUSH送信する
-    line_bot_api.push_message(to=userid, messages=container_obj)
-
-    #     # FlexSendMessageオブジェクトを作成
-    # flex_send_message = FlexSendMessage(alt_text='download complete', contents=json_string)
-    # # flex_send_message = FlexSendMessage(alt_text='download complete', contents=flex_message)
-
-    # # メッセージを送信
-    # line_bot_api.push_message(to=userid, messages=flex_send_message)
-
-    return 'OK'
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=port)

@@ -5,3 +5,5 @@ pytz
 pytest-playwright
 yt-dlp
 python-dotenv
+moviepy
+pydub
