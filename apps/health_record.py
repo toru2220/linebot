@@ -168,15 +168,17 @@ def run(playwright,pageurl,name,confirmimage):
     page.set_viewport_size({"width": 720, "height": 1024})
     page.goto(pageurl)
 
-    page.locator("input[aria-label='Single line text']").nth(0).fill(name)
-    page.locator("input[aria-label='Single line text']").nth(1).fill(str(random_choice))
-    page.locator("input[type=radio]").nth(0).check()
+    page.query_selector_all('input')[0].fill(name)
+    page.query_selector_all('input')[1].fill(str(random_choice))
+
+    page.query_selector_all('input[type=radio]')[0].check()
 
     # 入力内容
     page.screenshot(path=confirmimage, full_page=True)
 
     # 送信
-    page.locator("button[data-automation-id=submitButton]").nth(0).click()
+    page.query_selector_all('button')[1].click()
+
     # # 通信がアイドル状態になるまで待機
     # page.wait_for_load_state("networkidle")
 
