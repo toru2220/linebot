@@ -162,7 +162,7 @@ def run(playwright,pageurl,name,confirmimage):
     # リストからランダムに選択
     random_choice = random.choice(nums)
 
-    chromium = playwright.chromium # or "firefox" or "webkit".
+    chromium = playwright.chromium
     browser = chromium.launch()
     page = browser.new_page()
     page.set_viewport_size({"width": 720, "height": 1024})
